@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audii — AI for Deaf Communication</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="side-top">
+      <button class="icon-btn close-nav" id="closeNav" title="Close navigation">☰</button>
+      <div class="brand-small"><span class="brand-dot"></span> Audii</div>
+    </div>
+
+    <button class="new-chat" id="newChat">＋ <span>New conversation</span></button>
+
+    <div class="side-section">
+      <div class="side-label">TOOLS</div>
+      <button class="side-link active" data-panel="translator">◈ <span>Sign Translator</span></button>
+      <button class="side-link" data-panel="camera">◉ <span>Camera mode</span></button>
+      <button class="side-link" data-panel="alphabet">A <span>Alphabet board</span></button>
+      <button class="side-link" data-panel="guide">◎ <span>How Audii works</span></button>
+    </div>
+
+    <div class="side-bottom">
+      <button class="side-link" id="helpBtn">? <span>Help</span></button>
+      <button class="side-link" id="settingsBtn">⚙ <span>Settings</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn open-nav" id="openNav" title="Open navigation">☰</button>
+      <div class="top-title">
+        <span class="status"></span>
+        <strong>Audii</strong>
+        <span class="muted">communication assistant</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="topNewChat" title="New chat">＋</button>
+        <button class="icon-btn" id="topHelp" title="Help">?</button>
+        <button class="icon-btn" id="topSettings" title="Settings">⚙</button>
+      </div>
+    </header>
+
+    <section class="chat" id="chat">
+      <div class="welcome">
+        <div class="audii-mark">A</div>
+        <h1>Speak without barriers.</h1>
+        <p>Welcome to <b>Audii</b> — a communication interface where signed symbols become readable words and words can become speech.</p>
+        <div class="quick-grid">
+          <button class="quick-card" data-action="alphabet">
+            <span>🔤</span><b>Open alphabet</b><small>Tap letters to build a message.</small>
+          </button>
+          <button class="quick-card" data-action="translator">
+            <span>◈</span><b>Symbol translator</b><small>Enter symbols and translate them.</small>
+          </button>
+          <button class="quick-card" data-action="speech">
+            <span>🔊</span><b>Read aloud</b><small>Turn the written message into sound.</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="messages" id="messages"></div>
+    </section>
+
+    <section class="workspace">
+      <div class="panel" id="translatorPanel">
+        <div class="panel-head">
+          <div>
+            <h2>Symbol → Alphabet</h2>
+            <p>Type or paste Audii symbols below. Audii converts them into ordinary text.</p>
+          </div>
+          <span class="pill">LIVE</span>
+        </div>
+
+        <div class="symbol-input-wrap">
+          <textarea id="symbolInput" rows="3" placeholder="Example: 🅷 🅴 🅻 🅻 🅾️  ·  🆈 🅾️ 🆄"></textarea>
+          <div class="input-actions">
+            <button class="mini-btn" id="clearInput">Clear</button>
+            <button class="primary-btn" id="translateBtn">Translate ↗</button>
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-top">
+            <span>Audii translation</span>
+            <span id="confidence">Ready</span>
+          </div>
+          <div class="result-text" id="resultText">Your translated message will appear here.</div>
+          <div class="result-actions">
+            <button class="secondary-btn" id="speakResult">🔊 Speak</button>
+            <button class="secondary-btn" id="copyResult">Copy</button>
+            <button class="secondary-btn" id="sendResult">Send to chat</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel hidden" id="cameraPanel">
+        <div class="panel-head">
+          <div>
+            <h2>Camera sign mode</h2>
+            <p>Show a supported static hand sign to the camera. Audii tracks the hand in your browser and sends only landmark coordinates to Python for classification.</p>
+          </div>
+          <span class="pill" id="cameraStatus">OFF</span>
+        </div>
+
+        <div class="camera-card">
+          <div class="camera-stage">
+            <video id="cameraVideo" autoplay playsinline muted></video>
+            <canvas id="cameraCanvas"></canvas>
+            <div class="camera-placeholder" id="cameraPlaceholder">
+              <span>◉</span>
+              <b>Camera is off</b>
+              <small>Press Start camera to begin.</small>
+            </div>
+          </div>
+          <div class="camera-controls">
+            <button class="primary-btn" id="startCamera">Start camera</button>
+            <button class="secondary-btn" id="stopCamera">Stop</button>
+            <button class="secondary-btn" id="addDetected">Add detected letter</button>
+            <button class="secondary-btn" id="cameraMute" aria-pressed="false">🔊 Voice on</button>
+          </div>
+          <div class="detected-card">
+            <div>
+              <small>DETECTED LETTER</small>
+              <strong id="detectedLetter">—</strong>
+            </div>
+            <div>
+              <small>CONFIDENCE</small>
+              <strong id="detectedConfidence">—</strong>
+            </div>
+          </div>
+          <div class="camera-message">
+            <span>Camera transcript</span>
+            <strong id="cameraTranscript">—</strong>
+            <button class="secondary-btn" id="speakWord">🔊 Speak word</button>
+            <button class="secondary-btn" id="clearCameraText">Clear</button>
+          </div>
+        </div>
+        <div class="notice">Starter recognition currently covers <b>A, B, I, L, V and Y</b> with a lightweight landmark heuristic. When voice is on, Audii automatically speaks each confidently detected letter and speaks the assembled word after you pause signing. It is a prototype, not a full sign-language model. For production use, train/evaluate a classifier for the specific sign language you want Audii to support.</div>
+      </div>
+
+      <div class="panel hidden" id="alphabetPanel">
+        <div class="panel-head">
+          <div>
+            <h2>Audii alphabet board</h2>
+            <p>Tap a letter to add it to the message. Each card also gives the symbol Audii recognizes.</p>
+          </div>
+          <button class="secondary-btn" id="clearBoard">Clear</button>
+        </div>
+        <div class="letter-grid" id="letterGrid"></div>
+        <div class="board-output">
+          <span id="boardText">Tap letters…</span>
+          <div>
+            <button class="secondary-btn" id="speakBoard">🔊 Speak</button>
+            <button class="primary-btn" id="sendBoard">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel hidden" id="guidePanel">
+        <div class="panel-head">
+          <div>
+            <h2>About Audii</h2>
+            <p>A practical prototype designed to make deaf/hearing communication more accessible.</p>
+          </div>
+        </div>
+        <div class="guide">
+          <div><b>1. Build</b><span>Use the alphabet board or type Audii symbols.</span></div>
+          <div><b>2. Translate</b><span>Audii converts recognized symbols into ordinary alphabet text.</span></div>
+          <div><b>3. Speak</b><span>Your browser's speech engine reads the resulting message aloud.</span></div>
+          <div><b>4. Extend</b><span>A future version can connect camera-based sign-language recognition to this interface.</span></div>
+        </div>
+        <div class="notice">Prototype note: sign languages are real languages, and hand shapes differ by language and region. This version uses a clear symbol layer rather than claiming to recognize a camera image as real sign language.</div>
+      </div>
+    </section>
+
+    <footer>© 2026 Audii · Created by <b>Ituze Richard</b> · Communication should have no walls.</footer>
+  </main>
+</div>
+
+<div class="modal hidden" id="modal">
+  <div class="modal-card">
+    <button class="modal-close" id="modalClose">×</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
